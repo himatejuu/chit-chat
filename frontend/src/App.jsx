@@ -3,7 +3,8 @@ import './App.css';
 import Chat from './components/Chat';
 import UsernameModal from './components/UsernameModal';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Use relative URL if VITE_API_URL not set, allowing proxy/same-origin access
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 function App() {
   const [username, setUsername] = useState(localStorage.getItem('chitchat_username') || '');
