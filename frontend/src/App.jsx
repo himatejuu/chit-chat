@@ -8,7 +8,11 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 function App() {
   const [username, setUsername] = useState(localStorage.getItem('chitchat_username') || '');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { username: 'System', message: 'hi', timestamp: Date.now() - 10000 },
+    { username: 'System', message: 'hello', timestamp: Date.now() - 5000 },
+    { username: 'System', message: 'how are you', timestamp: Date.now() - 2000 }
+  ]);
 
   const handleSetUsername = (name) => {
     localStorage.setItem('chitchat_username', name);
@@ -26,6 +30,15 @@ function App() {
   };
 
   const sendMessage = async (message) => {
+    // Add message locally first for instant feedback
+    const newMessage = {
+      username: username,
+      message: message,
+      timestamp: Date.now()
+    };
+    setMessages(prev => [...prev, newMessage]);
+
+    // Try to send to backend (silent fail is OK)
     try {
       const response = await fetch(`${API_URL}/api/messages`, {
         method: 'POST',
@@ -37,7 +50,7 @@ function App() {
         loadMessages();
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Backend unavailable:', error);
     }
   };
 
