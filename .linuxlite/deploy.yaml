@@ -1,0 +1,56 @@
+# LinuxLite Deployment Configuration
+# This file describes how to deploy the chit-chat application
+
+app:
+  name: chit-chat
+  version: 1.0.0
+  description: Public chat room application
+
+runtime:
+  backend:
+    type: python
+    version: ">=3.10"
+    requirements: backend/requirements.txt
+    working_dir: /opt/chit-chat/backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    port: 8000
+    environment:
+      DB_PATH: /var/lib/chit-chat/chat.db
+
+  frontend:
+    type: static
+    build_tool: npm
+    build_command: npm run build
+    build_dir: frontend
+    output_dir: frontend/dist
+    web_root: /var/www/chit-chat
+
+dependencies:
+  system:
+    - python3
+    - python3-pip
+    - nodejs
+    - npm
+  python:
+    file: backend/requirements.txt
+  node:
+    file: frontend/package.json
+
+service:
+  name: chit-chat
+  type: daemon
+  user: nobody
+  group: nogroup
+  restart: always
+  log_stdout: /var/log/chit-chat/access.log
+  log_stderr: /var/log/chit-chat/error.log
+
+deployment:
+  pre_deploy:
+    - mkdir -p /var/lib/chit-chat
+    - mkdir -p /var/log/chit-chat
+    - chown nobody:nogroup /var/lib/chit-chat
+    - chown nobody:nogroup /var/log/chit-chat
+  post_deploy:
+    - echo "Initializing database..."
+    - python3 /opt/chit-chat/backend/database.py
